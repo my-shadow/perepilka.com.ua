@@ -35,24 +35,18 @@ $(document).ready(function () {
         $('#nav').removeClass('open');
     });
 
-    // --- Smooth Scroll ---
+    // --- Smooth Scroll + Product pre-select ---
     $('a[href^="#"]').on('click', function (e) {
+        var product = $(this).data('product');
+        if (product) {
+            $('#product_type').val(product);
+        }
         var target = $(this.getAttribute('href'));
         if (target.length) {
             e.preventDefault();
             $('html, body').animate({
                 scrollTop: target.offset().top - 70
             }, 600);
-        }
-    });
-
-    // --- Product buttons → pre-select product type ---
-    $('[data-product]').on('click', function () {
-        var product = $(this).data('product');
-        if (product === 'eggs') {
-            $('#product_type').val('eggs');
-        } else if (product === 'quails') {
-            $('#product_type').val('quails');
         }
     });
 

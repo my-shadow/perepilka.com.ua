@@ -586,9 +586,30 @@ ul { list-style: none; }
 
 .products__grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 32px;
     margin-top: 48px;
+}
+
+.product-card--featured {
+    border: 2px solid var(--primary);
+    overflow: visible;
+}
+
+.product-card--featured::before {
+    content: '⭐ Найбільший попит';
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--green);
+    color: var(--white);
+    font-size: 13px;
+    font-weight: 700;
+    padding: 4px 18px;
+    border-radius: 50px;
+    white-space: nowrap;
+    z-index: 1;
 }
 
 .product-card {
@@ -1118,6 +1139,8 @@ ul { list-style: none; }
 
     /* Products */
     .products__grid { grid-template-columns: 1fr; }
+    .product-card--featured { border: none; }
+    .product-card--featured::before { display: none; }
 
     /* Advantages */
     .advantages__grid { grid-template-columns: 1fr; }
