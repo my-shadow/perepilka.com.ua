@@ -16,14 +16,22 @@ if (empty($token) || strlen($token) < 32) {
 }
 
 // Sanitize inputs
-$name         = htmlspecialchars(strip_tags(trim($_POST['name'] ?? '')), ENT_QUOTES, 'UTF-8');
-$phone        = htmlspecialchars(strip_tags(trim($_POST['phone'] ?? '')), ENT_QUOTES, 'UTF-8');
-$address      = htmlspecialchars(strip_tags(trim($_POST['address'] ?? '')), ENT_QUOTES, 'UTF-8');
-$product_type = htmlspecialchars(strip_tags(trim($_POST['product_type'] ?? '')), ENT_QUOTES, 'UTF-8');
-$quantity     = htmlspecialchars(strip_tags(trim($_POST['quantity'] ?? '')), ENT_QUOTES, 'UTF-8');
+$name  = htmlspecialchars(strip_tags(trim($_POST['name']  ?? '')), ENT_QUOTES, 'UTF-8');
+$phone = htmlspecialchars(strip_tags(trim($_POST['phone'] ?? '')), ENT_QUOTES, 'UTF-8');
+
+// Parse order items
+$rawItems = (isset($_POST['items']) && is_array($_POST['items'])) ? $_POST['items'] : [];
+$items = [];
+foreach ($rawItems as $item) {
+    $product = htmlspecialchars(strip_tags(trim($item['product'] ?? '')), ENT_QUOTES, 'UTF-8');
+    $qty     = (int)($item['qty'] ?? 0);
+    if ($product !== '' && $qty > 0) {
+        $items[] = ['product' => $product, 'qty' => $qty];
+    }
+}
 
 // Validate required fields
-if (empty($name) || empty($phone) || empty($address) || empty($product_type) || empty($quantity)) {
+if (empty($name) || empty($phone)) {
     echo json_encode(['success' => false, 'message' => 'Будь ласка, заповніть всі обов\'язкові поля.']);
     exit;
 }
@@ -34,12 +42,36 @@ if (!preg_match('/^\+?3?8?\s?\(?\d{3}\)?\s?\d{3}[\s\-]?\d{2}[\s\-]?\d{2}$/', $ph
     exit;
 }
 
-// Product type label
+// Build items rows for email
 $productLabels = [
-    'eggs'   => 'Перепелині Яйця (₴120/десяток)',
-    'quails' => 'Живі Перепели (₴150/птицю)',
+    'eggs'       => 'Перепелині Яйця',
+    'incubation' => 'Інкубаційні Яйця',
+    'quails'     => 'Живі Перепілки',
+    'meat'       => 'М\'ясо Перепілки',
 ];
-$productLabel = $productLabels[$product_type] ?? $product_type;
+$prices = ['eggs' => 50, 'incubation' => 5, 'quails' => 150, 'meat' => 250];
+$units  = ['eggs' => 'лоток', 'incubation' => 'шт', 'quails' => 'птицю', 'meat' => 'кг'];
+
+$itemsHtml  = '';
+$grandTotal = 0;
+foreach ($items as $item) {
+    $pLabel   = $productLabels[$item['product']] ?? $item['product'];
+    $pPrice   = $prices[$item['product']] ?? 0;
+    $pUnit    = $units[$item['product']] ?? 'шт';
+    $subtotal = $item['qty'] * $pPrice;
+    $grandTotal += $subtotal;
+    $detail   = $item['qty'] . ' ' . $pUnit . ' × ' . $pPrice . 'грн = ' . $subtotal . 'грн';
+    if ($item['product'] === 'eggs') {
+        $detail .= ' (' . ($item['qty'] * 20) . ' яєць)';
+    }
+    $itemsHtml .= "<tr><td>{$pLabel}</td><td>{$detail}</td></tr>";
+}
+if ($grandTotal > 0) {
+    $itemsHtml .= "<tr style='background:#FFF8F0'><td><strong>Разом:</strong></td><td><strong>{$grandTotal}грн</strong></td></tr>";
+}
+if ($itemsHtml === '') {
+    $itemsHtml = "<tr><td colspan='2' style='color:#999'>Позиції не вказано</td></tr>";
+}
 
 // Build HTML email
 $to      = 'vip.white@gmail.com';
@@ -65,10 +97,9 @@ $htmlBody = "
         <table>
             <tr><td>Ім'я:</td><td>{$name}</td></tr>
             <tr><td>Телефон:</td><td>{$phone}</td></tr>
-            <tr><td>Адреса доставки:</td><td>{$address}</td></tr>
-            <tr><td>Продукт:</td><td>{$productLabel}</td></tr>
-            <tr><td>Кількість:</td><td>{$quantity}</td></tr>
         </table>
+        <h3 style='color:#C17F4E;margin-top:24px;font-size:15px'>Позиції замовлення</h3>
+        <table>{$itemsHtml}</table>
         <p class='footer'>
             Замовлення отримано: " . date('d.m.Y H:i') . "<br>
             Перепелина Оаза — автоматичне повідомлення
@@ -86,6 +117,40 @@ $headers .= "Reply-To: noreply@perepelyna-oaza.ua\r\n";
 
 // Send email
 $sent = mail($to, $subject, $htmlBody, $headers);
+
+// Send Telegram notification
+$tgToken  = '8428263399:AAEQVHImXZ5EB3d7TA1sj7lW0stHdy8htZM';
+$tgChatId = '-5052707759';
+
+$tgText  = "🥚 *Нове замовлення — Перепелина Оаза*\n\n";
+$tgText .= "👤 *Ім'я:* {$name}\n";
+$tgText .= "📞 *Телефон:* {$phone}\n";
+
+if (!empty($items)) {
+    $tgText .= "\n📦 *Позиції:*\n";
+    foreach ($items as $item) {
+        $pLabel   = $productLabels[$item['product']] ?? $item['product'];
+        $pPrice   = $prices[$item['product']] ?? 0;
+        $pUnit    = $units[$item['product']] ?? 'шт';
+        $subtotal = $item['qty'] * $pPrice;
+        $line     = "{$pLabel}: {$item['qty']} {$pUnit} × {$pPrice}грн = {$subtotal}грн";
+        if ($item['product'] === 'eggs') {
+            $line .= ' (' . ($item['qty'] * 20) . ' яєць)';
+        }
+        $tgText .= "• {$line}\n";
+    }
+    if ($grandTotal > 0) {
+        $tgText .= "\n💰 *Разом: {$grandTotal}грн*";
+    }
+}
+
+$tgText .= "\n\n🕐 " . date('d.m.Y H:i');
+
+file_get_contents('https://api.telegram.org/bot' . $tgToken . '/sendMessage?' . http_build_query([
+    'chat_id'    => $tgChatId,
+    'text'       => $tgText,
+    'parse_mode' => 'Markdown',
+]));
 
 if ($sent) {
     echo json_encode(['success' => true, 'message' => 'Замовлення відправлено! Ми зв\'яжемося з вами найближчим часом.']);

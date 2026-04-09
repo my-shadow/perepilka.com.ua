@@ -39,7 +39,8 @@ $(document).ready(function () {
     $('a[href^="#"]').on('click', function (e) {
         var product = $(this).data('product');
         if (product) {
-            $('#product_type').val(product);
+            var $firstSelect = $('#orderItems .order__item:first-child select');
+            $firstSelect.val(product).trigger('change');
         }
         var target = $(this.getAttribute('href'));
         if (target.length) {
@@ -113,8 +114,139 @@ $(document).ready(function () {
         if (e.key === 'ArrowRight') $lightbox.find('.lightbox__next').click();
     });
 
+    // --- Order Items Repeater ---
+    var PRODUCTS = {
+        eggs:       { label: 'Перепелині Яйця',  price: 50,  qtyLabel: 'лотки (по 20 яєць)', unit: 'лоток', unitMany: 'лотків' },
+        incubation: { label: 'Інкубаційні Яйця', price: 5,   qtyLabel: 'штук',               unit: 'шт',    unitMany: 'шт'    },
+        quails:     { label: 'Живі Перепілки',   price: 150, qtyLabel: 'птиць',               unit: 'птицю', unitMany: 'птиць' },
+        meat:       { label: 'М\'ясо Перепілки', price: 250, qtyLabel: 'кілограми',             unit: 'кг',    unitMany: 'кг'    }
+    };
+
+    var itemCounter = 0;
+
+    function makeItemRow(index, preselect) {
+        var opts = '<option value="">Оберіть продукт</option>'
+            + '<option value="eggs"'       + (preselect === 'eggs'       ? ' selected' : '') + '>Перепелині Яйця (50грн/лоток)</option>'
+            + '<option value="incubation"' + (preselect === 'incubation' ? ' selected' : '') + '>Інкубаційні Яйця (5грн/шт)</option>'
+            + '<option value="quails"'     + (preselect === 'quails'     ? ' selected' : '') + '>Живі Перепілки (150грн/птицю)</option>'
+            + '<option value="meat"'       + (preselect === 'meat'       ? ' selected' : '') + '>М\'ясо Перепілки (250грн/кг)</option>';
+
+        return '<div class="order__item" data-index="' + index + '">'
+            + '<div class="form-group">'
+            +   '<label>Продукт</label>'
+            +   '<select name="items[' + index + '][product]">' + opts + '</select>'
+            + '</div>'
+            + '<div class="form-group">'
+            +   '<label class="qty-label">Кількість</label>'
+            +   '<input type="number" name="items[' + index + '][qty]" min="1" placeholder="Кількість">'
+            + '</div>'
+            + '<button type="button" class="item__remove" title="Видалити"><i class="fas fa-times"></i></button>'
+            + '</div>';
+    }
+
+    function addItemRow(preselect) {
+        $('#orderItems').append(makeItemRow(itemCounter++, preselect));
+        updateRemoveButtons();
+        if (preselect) {
+            updateRowHint($('#orderItems .order__item:last-child'));
+        }
+    }
+
+    function updateRemoveButtons() {
+        var count = $('#orderItems .order__item').length;
+        $('#orderItems .item__remove').toggle(count > 1);
+    }
+
+    function updateRowHint($row) {
+        var product = $row.find('select').val();
+        var $label  = $row.find('.qty-label');
+        var p       = PRODUCTS[product];
+        $label.text(p ? 'Кількість (' + p.qtyLabel + ')' : 'Кількість');
+    }
+
+    function recalculateSummary() {
+        var lines = [];
+        var total = 0;
+
+        $('#orderItems .order__item').each(function () {
+            var product = $(this).find('select').val();
+            var qty     = parseInt($(this).find('input[type="number"]').val(), 10);
+            if (!product || !qty || qty < 1) return;
+            var p = PRODUCTS[product];
+            if (!p) return;
+            var subtotal = qty * p.price;
+            total += subtotal;
+            var detail;
+            if (product === 'eggs') {
+                detail = qty + ' ' + (qty === 1 ? p.unit : p.unitMany) + ' × ' + p.price + 'грн (= ' + (qty * 20) + ' яєць)';
+            } else {
+                detail = qty + ' ' + (qty === 1 ? p.unit : p.unitMany) + ' × ' + p.price + 'грн';
+            }
+            lines.push('<div class="summary__line"><span>' + p.label + ': ' + detail + '</span><span>' + subtotal + 'грн</span></div>');
+        });
+
+        if (lines.length === 0) {
+            $('#orderSummary').hide();
+            return;
+        }
+
+        $('#summaryLines').html(lines.join(''));
+        $('#summaryTotal').text(total + 'грн');
+        $('#orderSummary').show();
+    }
+
+    // Init first row
+    addItemRow();
+
+    $('#addItem').on('click', function () {
+        addItemRow();
+    });
+
+    $(document).on('click', '.item__remove', function () {
+        $(this).closest('.order__item').remove();
+        updateRemoveButtons();
+        recalculateSummary();
+    });
+
+    $(document).on('change input', '.order__item select, .order__item input[type="number"]', function () {
+        updateRowHint($(this).closest('.order__item'));
+        recalculateSummary();
+    });
+
+    // --- Phone mask: +38 (0XX) XXX-XX-XX ---
+    $('#phone').on('input keydown', function (e) {
+        var input = this;
+        var digits = input.value.replace(/\D/g, '');
+
+        // Always keep leading 38
+        if (digits.startsWith('380')) {
+            digits = digits.slice(2);
+        } else if (digits.startsWith('38')) {
+            digits = digits.slice(2);
+        } else if (digits.startsWith('8')) {
+            digits = digits.slice(1);
+        }
+        digits = digits.slice(0, 10);
+
+        var mask = '+38 ';
+        if (digits.length > 0) mask += '(' + digits.slice(0, 3);
+        if (digits.length >= 3) mask += ') ' + digits.slice(3, 6);
+        if (digits.length >= 6) mask += '-' + digits.slice(6, 8);
+        if (digits.length >= 8) mask += '-' + digits.slice(8, 10);
+
+        input.value = mask;
+    });
+
+    $('#phone').on('focus', function () {
+        if (!this.value) this.value = '+38 (0';
+    });
+
+    $('#phone').on('blur', function () {
+        if (this.value === '+38 (0') this.value = '';
+    });
+
     // --- Form Validation & Submission ---
-    var phoneRegex = /^\+?3?8?\s?\(?\d{3}\)?\s?\d{3}[\s-]?\d{2}[\s-]?\d{2}$/;
+    var phoneRegex = /^\+38 \(0\d{2}\) \d{3}-\d{2}-\d{2}$/;
 
     function validateField($field) {
         var val = $field.val().trim();
@@ -138,7 +270,7 @@ $(document).ready(function () {
     }
 
     $('#orderForm input, #orderForm select').on('blur change', function () {
-        validateField($(this));
+        if ($(this).prop('required')) validateField($(this));
     });
 
     $('#orderForm').on('submit', function (e) {
@@ -148,9 +280,7 @@ $(document).ready(function () {
         var isValid = true;
 
         $form.find('input[required], select[required]').each(function () {
-            if (!validateField($(this))) {
-                isValid = false;
-            }
+            if (!validateField($(this))) isValid = false;
         });
 
         if (!isValid) return;
@@ -168,7 +298,10 @@ $(document).ready(function () {
                 if (response.success) {
                     showToast('success', response.message || 'Замовлення відправлено! Ми зв\'яжемося з вами найближчим часом.');
                     $form[0].reset();
-                    // Regenerate CSRF token
+                    $('#orderItems').empty();
+                    itemCounter = 0;
+                    addItemRow();
+                    $('#orderSummary').hide();
                     csrfToken = generateCSRF();
                     $('#csrfToken').val(csrfToken);
                     sessionStorage.setItem('csrf_token', csrfToken);
