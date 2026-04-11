@@ -1,9 +1,6 @@
 # IDE
 .idea/
 
-# Claude Code
-.claude/
-
 # OS
 Thumbs.db
 Desktop.ini
@@ -15,3 +12,4 @@ node_modules/
 # Environment
 .env
 .env.*
+.ddev/

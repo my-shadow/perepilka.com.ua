@@ -116,7 +116,7 @@ $(document).ready(function () {
 
     // --- Order Items Repeater ---
     var PRODUCTS = {
-        eggs:       { label: 'Перепелині Яйця',  price: 50,  qtyLabel: 'лотки (по 20 яєць)', unit: 'лоток', unitMany: 'лотків' },
+        eggs:       { label: 'Перепелині Яйця',  price: 50,  qtyLabel: 'лотки: по 20 яєць', unit: 'лоток', unitMany: 'лотків' },
         incubation: { label: 'Інкубаційні Яйця', price: 5,   qtyLabel: 'штук',               unit: 'шт',    unitMany: 'шт'    },
         quails:     { label: 'Живі Перепілки',   price: 150, qtyLabel: 'птиць',               unit: 'птицю', unitMany: 'птиць' },
         meat:       { label: 'М\'ясо Перепілки', price: 250, qtyLabel: 'кілограми',             unit: 'кг',    unitMany: 'кг'    }
@@ -182,7 +182,7 @@ $(document).ready(function () {
             } else {
                 detail = qty + ' ' + (qty === 1 ? p.unit : p.unitMany) + ' × ' + p.price + 'грн';
             }
-            lines.push('<div class="summary__line"><span>' + p.label + ': ' + detail + '</span><span>' + subtotal + 'грн</span></div>');
+            lines.push('<div class="summary__line"><span><strong>' + p.label + ':</strong> <br \>' + detail + '</span><span>' + subtotal + 'грн</span></div>');
         });
 
         if (lines.length === 0) {
