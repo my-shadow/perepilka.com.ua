@@ -45,8 +45,10 @@ if ($loggedIn && $_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'save_settings') {
         $current = loadJson(SETTINGS_FILE, []);
         $current['meta'] = [
+            'site_url'         => rtrim(trim($_POST['site_url'] ?? ''), '/'),
             'title'            => trim($_POST['title'] ?? ''),
             'meta_description' => trim($_POST['meta_description'] ?? ''),
+            'phone'            => trim($_POST['phone'] ?? ''),
             'og_image'         => (function() use ($current) {
                 if (!empty($_FILES['og_image_file']['tmp_name'])) {
                     $file    = $_FILES['og_image_file'];
@@ -94,7 +96,7 @@ if ($loggedIn && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // ── Load data ─────────────────────────────────────────────────────────────────
 $settings = loadJson(SETTINGS_FILE, [
-    'meta'   => ['title' => '', 'meta_description' => '', 'og_image' => ''],
+    'meta'   => ['site_url' => '', 'title' => '', 'meta_description' => '', 'phone' => '', 'og_image' => ''],
     'prices' => ['eggs' => 50, 'incubation' => 5, 'quails' => 150, 'meat' => 250],
 ]);
 $submissions = loadJson(SUBMISSIONS_FILE, []);
@@ -249,12 +251,20 @@ $activeTab = $_GET['tab'] ?? 'settings';
             <div class="card__title">Meta / SEO</div>
             <div class="form-grid">
                 <div class="form-group full">
+                    <label>URL сайту (для canonical та og:url)</label>
+                    <input type="text" name="site_url" value="<?= h($settings['meta']['site_url'] ?? '') ?>" placeholder="https://perepilka.com.ua">
+                </div>
+                <div class="form-group full">
                     <label>Заголовок сторінки (title)</label>
                     <input type="text" name="title" value="<?= h($settings['meta']['title']) ?>">
                 </div>
                 <div class="form-group full">
                     <label>Meta description</label>
                     <input type="text" name="meta_description" value="<?= h($settings['meta']['meta_description']) ?>">
+                </div>
+                <div class="form-group full">
+                    <label>Телефон (додається до meta description)</label>
+                    <input type="text" name="phone" value="<?= h($settings['meta']['phone'] ?? '') ?>" placeholder="+38 (097) 000-00-00">
                 </div>
                 <div class="form-group full">
                     <label>OG Image</label>

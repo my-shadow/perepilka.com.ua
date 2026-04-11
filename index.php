@@ -1,7 +1,7 @@
 <?php
 $_settingsFile = __DIR__ . '/data/settings.json';
 $_defaults = [
-    'meta'   => ['title' => 'Перепелина Оаза — Преміум Перепели & Свіжі Яйця', 'meta_description' => 'Перепелина Оаза — домашнє господарство. Свіжі перепелині яйця та живі перепели з доставкою.', 'og_image' => ''],
+    'meta'   => ['site_url' => '', 'title' => 'Перепелина Оаза — Преміум Перепели & Свіжі Яйця', 'meta_description' => 'Перепелина Оаза — домашнє господарство. Свіжі перепелині яйця та живі перепели з доставкою.', 'phone' => '', 'og_image' => ''],
     'prices' => ['eggs' => 50, 'incubation' => 5, 'quails' => 150, 'meat' => 250],
 ];
 $_s = file_exists($_settingsFile) ? (json_decode(file_get_contents($_settingsFile), true) ?? []) : [];
@@ -14,12 +14,38 @@ $_m = $_s['meta'];
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($_m['title']) ?></title>
-    <meta name="description" content="<?= htmlspecialchars($_m['meta_description']) ?>">
-    <?php if (!empty($_m['og_image'])): ?>
-    <meta property="og:image" content="<?= htmlspecialchars($_m['og_image']) ?>">
+    <?php $_metaDesc = $_m['meta_description'] . (!empty($_m['phone']) ? ' 📞 ' . $_m['phone'] : ''); ?>
+    <meta name="description" content="<?= htmlspecialchars($_metaDesc) ?>">
+    <?php
+        $_siteUrl  = rtrim($_m['site_url'] ?? '', '/');
+        $_ogImage  = !empty($_m['og_image'])
+            ? (str_starts_with($_m['og_image'], 'http') ? $_m['og_image'] : $_siteUrl . $_m['og_image'])
+            : '';
+    ?>
+    <?php if ($_siteUrl): ?>
+    <link rel="canonical" href="<?= htmlspecialchars($_siteUrl) ?>">
     <?php endif; ?>
-    <meta property="og:title" content="<?= htmlspecialchars($_m['title']) ?>">
-    <meta property="og:description" content="<?= htmlspecialchars($_m['meta_description']) ?>">
+
+    <!-- Open Graph -->
+    <meta property="og:type"        content="website">
+    <meta property="og:site_name"   content="Перепелина Оаза">
+    <meta property="og:locale"      content="uk_UA">
+    <meta property="og:title"       content="<?= htmlspecialchars($_m['title']) ?>">
+    <meta property="og:description" content="<?= htmlspecialchars($_metaDesc) ?>">
+    <?php if ($_siteUrl): ?>
+    <meta property="og:url"         content="<?= htmlspecialchars($_siteUrl) ?>">
+    <?php endif; ?>
+    <?php if ($_ogImage): ?>
+    <meta property="og:image"       content="<?= htmlspecialchars($_ogImage) ?>">
+    <?php endif; ?>
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card"        content="<?= $_ogImage ? 'summary_large_image' : 'summary' ?>">
+    <meta name="twitter:title"       content="<?= htmlspecialchars($_m['title']) ?>">
+    <meta name="twitter:description" content="<?= htmlspecialchars($_metaDesc) ?>">
+    <?php if ($_ogImage): ?>
+    <meta name="twitter:image"       content="<?= htmlspecialchars($_ogImage) ?>">
+    <?php endif; ?>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
