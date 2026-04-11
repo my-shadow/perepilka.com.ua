@@ -223,6 +223,8 @@ ul { list-style: none; }
     gap: 32px;
 }
 
+.nav__order-btn { display: none; }
+
 .nav__link {
     font-size: 15px;
     font-weight: 500;
@@ -1101,9 +1103,14 @@ ul { list-style: none; }
     transition: border-color var(--transition), background var(--transition);
 }
 
-.btn--add-item:hover {
+.btn--add-item:hover:not(:disabled) {
     border-color: var(--primary);
     background: var(--primary-light);
+}
+
+.btn--add-item:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
 }
 
 /* Order Summary */
@@ -1338,6 +1345,8 @@ ul { list-style: none; }
         transition: right var(--transition);
         padding: 80px 30px 30px;
         z-index: 1000;
+        display: flex;
+        flex-direction: column;
     }
 
     .nav.open {
@@ -1359,6 +1368,13 @@ ul { list-style: none; }
 
     .header__cta { display: none; }
     .burger { display: flex; }
+
+    .nav__order-btn {
+        display: block;
+        margin-top: auto;
+        padding-bottom: 16px;
+        text-align: center;
+    }
 
     .burger.active span {
         background: var(--text-dark);

@@ -49,7 +49,9 @@ $productLabels = [
     'quails'     => 'Живі Перепілки',
     'meat'       => 'М\'ясо Перепілки',
 ];
-$prices = ['eggs' => 50, 'incubation' => 5, 'quails' => 150, 'meat' => 250];
+$_settingsFile = __DIR__ . '/../data/settings.json';
+$_settingsData = file_exists($_settingsFile) ? (json_decode(file_get_contents($_settingsFile), true) ?? []) : [];
+$prices = $_settingsData['prices'] ?? ['eggs' => 50, 'incubation' => 5, 'quails' => 150, 'meat' => 250];
 $units  = ['eggs' => 'лоток', 'incubation' => 'шт', 'quails' => 'птицю', 'meat' => 'кг'];
 
 $itemsHtml  = '';
@@ -75,7 +77,7 @@ if ($itemsHtml === '') {
 
 // Build HTML email
 $to      = 'vip.white@gmail.com';
-$subject = '=?UTF-8?B?' . base64_encode('Нове замовлення — Перепелина Оаза') . '?=';
+$subject = '=?UTF-8?B?' . base64_encode('Нове замовлення') . '?=';
 
 $htmlBody = "
 <html>
@@ -122,9 +124,10 @@ $sent = mail($to, $subject, $htmlBody, $headers);
 $tgToken  = '8428263399:AAEQVHImXZ5EB3d7TA1sj7lW0stHdy8htZM';
 $tgChatId = '-5052707759';
 
-$tgText  = "🥚 *Нове замовлення — Перепелина Оаза*\n\n";
+$tgText  = "🥚 *Нове замовлення*\n\n";
 $tgText .= "👤 *Ім'я:* {$name}\n";
-$tgText .= "📞 *Телефон:* {$phone}\n";
+$tgPhone = preg_replace('/[^\d+]/', '', $phone);
+$tgText .= "📞 *Телефон:* {$tgPhone}\n";
 
 if (!empty($items)) {
     $tgText .= "\n📦 *Позиції:*\n";
@@ -151,6 +154,42 @@ file_get_contents('https://api.telegram.org/bot' . $tgToken . '/sendMessage?' . 
     'text'       => $tgText,
     'parse_mode' => 'Markdown',
 ]));
+
+// Save submission to JSON
+$submissionsFile = __DIR__ . '/../data/submissions.json';
+$submission = [
+    'id'    => uniqid('', true),
+    'date'  => date('d.m.Y H:i'),
+    'name'  => $name,
+    'phone' => $phone,
+    'items' => array_map(function($item) use ($prices, $productLabels, $units) {
+        $subtotal = $item['qty'] * ($prices[$item['product']] ?? 0);
+        return [
+            'product' => $item['product'],
+            'label'   => $productLabels[$item['product']] ?? $item['product'],
+            'qty'     => $item['qty'],
+            'unit'    => $units[$item['product']] ?? 'шт',
+            'price'   => $prices[$item['product']] ?? 0,
+            'subtotal'=> $subtotal,
+        ];
+    }, $items),
+    'total' => $grandTotal,
+];
+$fp = fopen($submissionsFile, 'c+');
+if ($fp && flock($fp, LOCK_EX)) {
+    $existing = [];
+    $size = filesize($submissionsFile);
+    if ($size > 0) {
+        $json = fread($fp, $size);
+        $existing = json_decode($json, true) ?? [];
+    }
+    array_unshift($existing, $submission);
+    ftruncate($fp, 0);
+    rewind($fp);
+    fwrite($fp, json_encode($existing, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+    flock($fp, LOCK_UN);
+    fclose($fp);
+}
 
 if ($sent) {
     echo json_encode(['success' => true, 'message' => 'Замовлення відправлено! Ми зв\'яжемося з вами найближчим часом.']);

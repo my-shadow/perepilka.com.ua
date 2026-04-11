@@ -1,10 +1,25 @@
-<!DOCTYPE html>
+<?php
+$_settingsFile = __DIR__ . '/data/settings.json';
+$_defaults = [
+    'meta'   => ['title' => 'Перепелина Оаза — Преміум Перепели & Свіжі Яйця', 'meta_description' => 'Перепелина Оаза — домашнє господарство. Свіжі перепелині яйця та живі перепели з доставкою.', 'og_image' => ''],
+    'prices' => ['eggs' => 50, 'incubation' => 5, 'quails' => 150, 'meat' => 250],
+];
+$_s = file_exists($_settingsFile) ? (json_decode(file_get_contents($_settingsFile), true) ?? []) : [];
+$_s = array_replace_recursive($_defaults, $_s);
+$_p = $_s['prices'];
+$_m = $_s['meta'];
+?><!DOCTYPE html>
 <html lang="uk">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Перепелина Оаза — Преміум Перепели & Свіжі Яйця</title>
-    <meta name="description" content="Перепелина Оаза — домашнє господарство. Свіжі перепелині яйця та живі перепели з доставкою.">
+    <title><?= htmlspecialchars($_m['title']) ?></title>
+    <meta name="description" content="<?= htmlspecialchars($_m['meta_description']) ?>">
+    <?php if (!empty($_m['og_image'])): ?>
+    <meta property="og:image" content="<?= htmlspecialchars($_m['og_image']) ?>">
+    <?php endif; ?>
+    <meta property="og:title" content="<?= htmlspecialchars($_m['title']) ?>">
+    <meta property="og:description" content="<?= htmlspecialchars($_m['meta_description']) ?>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
@@ -24,10 +39,10 @@
                 <ul class="nav__list">
                     <li><a href="#products" class="nav__link">Продукція</a></li>
                     <li><a href="#breed" class="nav__link">Порода</a></li>
-                    <li><a href="#advantages" class="nav__link">Переваги</a></li>
                     <li><a href="#about" class="nav__link">Про Нас</a></li>
                     <li><a href="#contact" class="nav__link">Контакти</a></li>
                 </ul>
+                <a href="#order" class="btn btn--primary nav__order-btn">Замовити</a>
             </nav>
             <a href="#order" class="btn btn--primary header__cta">Замовити</a>
             <button class="burger" id="burger" aria-label="Меню">
@@ -175,7 +190,7 @@
                             Багаті на вітаміни та мікроелементи, ідеальні для здорового харчування.</p>
                         <p class="product-card__desc">Можлива доставка по Україні.</p>
                         <div class="product-card__footer">
-                            <div class="product-card__price">50<span> грн/20 шт</span></div>
+                            <div class="product-card__price"><?= (int)$_p['eggs'] ?><span> грн/20 шт</span></div>
                             <a href="#order" class="btn btn--primary product-order-btn" data-product="eggs">Замовити</a>
                         </div>
                     </div>
@@ -189,7 +204,7 @@
                         <p class="product-card__desc">Відібрані яйця для інкубації з високим відсотком виводимості. Ідеальні для розведення власного поголів'я перепелів.</p>
                         <p class="product-card__desc">Можлива доставка по Україні.</p>
                         <div class="product-card__footer">
-                            <div class="product-card__price">5<span> грн/шт</span></div>
+                            <div class="product-card__price"><?= (int)$_p['incubation'] ?><span> грн/шт</span></div>
                             <a href="#order" class="btn btn--primary product-order-btn" data-product="incubation">Замовити</a>
                         </div>
                     </div>
@@ -203,7 +218,7 @@
                         <p class="product-card__desc">Здорові добові перепілки для розведення або домашнього господарства. Порода Техас 3/1 з високою яйценоскістю та міцним здоров'ям.</p>
                         <p class="product-card__desc">Лише самовивіз.</p>
                         <div class="product-card__footer">
-                            <div class="product-card__price">150<span> грн/птицю</span></div>
+                            <div class="product-card__price"><?= (int)$_p['quails'] ?><span> грн/птицю</span></div>
                             <a href="#order" class="btn btn--primary product-order-btn" data-product="quails">Замовити</a>
                         </div>
                     </div>
@@ -217,7 +232,7 @@
                         <p class="product-card__desc">Свіже, ніжне, дієтичне м'ясо з мінімальною кількістю жиру, ідеальне для здорового харчування всієї родини.</p>
                         <p class="product-card__desc">Самовивіз або по домовленості.</p>
                         <div class="product-card__footer">
-                            <div class="product-card__price">250<span> грн/кг</span></div>
+                            <div class="product-card__price"><?= (int)$_p['meat'] ?><span> грн/кг</span></div>
                             <a href="#order" class="btn btn--primary product-order-btn" data-product="meat">Замовити</a>
                         </div>
                     </div>
@@ -412,6 +427,7 @@
         </div>
     </div>
 
+    <script>window.PRICES = <?= json_encode($_p, JSON_NUMERIC_CHECK) ?>;</script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="js/main.js"></script>
 </body>

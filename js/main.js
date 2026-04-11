@@ -30,7 +30,7 @@ $(document).ready(function () {
     });
 
     // Close mobile nav on link click
-    $('.nav__link').on('click', function () {
+    $('.nav__link, .nav__order-btn').on('click', function () {
         $('#burger').removeClass('active');
         $('#nav').removeClass('open');
     });
@@ -115,21 +115,22 @@ $(document).ready(function () {
     });
 
     // --- Order Items Repeater ---
+    var _P = window.PRICES || { eggs: 50, incubation: 5, quails: 150, meat: 250 };
     var PRODUCTS = {
-        eggs:       { label: 'Перепелині Яйця',  price: 50,  qtyLabel: 'лотки: по 20 яєць', unit: 'лоток', unitMany: 'лотків' },
-        incubation: { label: 'Інкубаційні Яйця', price: 5,   qtyLabel: 'штук',               unit: 'шт',    unitMany: 'шт'    },
-        quails:     { label: 'Живі Перепілки',   price: 150, qtyLabel: 'птиць',               unit: 'птицю', unitMany: 'птиць' },
-        meat:       { label: 'М\'ясо Перепілки', price: 250, qtyLabel: 'кілограми',             unit: 'кг',    unitMany: 'кг'    }
+        eggs:       { label: 'Перепелині Яйця',  price: _P.eggs,       qtyLabel: 'лотки: по 20 яєць', unit: 'лоток', unitMany: 'лотків' },
+        incubation: { label: 'Інкубаційні Яйця', price: _P.incubation, qtyLabel: 'штук',               unit: 'шт',    unitMany: 'шт'    },
+        quails:     { label: 'Живі Перепілки',   price: _P.quails,     qtyLabel: 'птиць',               unit: 'птицю', unitMany: 'птиць' },
+        meat:       { label: 'М\'ясо Перепілки', price: _P.meat,       qtyLabel: 'кілограми',           unit: 'кг',    unitMany: 'кг'    }
     };
 
     var itemCounter = 0;
 
     function makeItemRow(index, preselect) {
         var opts = '<option value="">Оберіть продукт</option>'
-            + '<option value="eggs"'       + (preselect === 'eggs'       ? ' selected' : '') + '>Перепелині Яйця (50грн/лоток)</option>'
-            + '<option value="incubation"' + (preselect === 'incubation' ? ' selected' : '') + '>Інкубаційні Яйця (5грн/шт)</option>'
-            + '<option value="quails"'     + (preselect === 'quails'     ? ' selected' : '') + '>Живі Перепілки (150грн/птицю)</option>'
-            + '<option value="meat"'       + (preselect === 'meat'       ? ' selected' : '') + '>М\'ясо Перепілки (250грн/кг)</option>';
+            + '<option value="eggs"'       + (preselect === 'eggs'       ? ' selected' : '') + '>Перепелині Яйця ('       + _P.eggs       + 'грн/лоток)</option>'
+            + '<option value="incubation"' + (preselect === 'incubation' ? ' selected' : '') + '>Інкубаційні Яйця ('      + _P.incubation + 'грн/шт)</option>'
+            + '<option value="quails"'     + (preselect === 'quails'     ? ' selected' : '') + '>Живі Перепілки ('        + _P.quails     + 'грн/птицю)</option>'
+            + '<option value="meat"'       + (preselect === 'meat'       ? ' selected' : '') + '>М\'ясо Перепілки ('      + _P.meat       + 'грн/кг)</option>';
 
         return '<div class="order__item" data-index="' + index + '">'
             + '<div class="form-group">'
@@ -150,11 +151,22 @@ $(document).ready(function () {
         if (preselect) {
             updateRowHint($('#orderItems .order__item:last-child'));
         }
+        updateAddItemBtn();
     }
 
     function updateRemoveButtons() {
         var count = $('#orderItems .order__item').length;
         $('#orderItems .item__remove').toggle(count > 1);
+    }
+
+    function updateAddItemBtn() {
+        var allFilled = true;
+        $('#orderItems .order__item').each(function () {
+            var product = $(this).find('select').val();
+            var qty     = parseInt($(this).find('input[type="number"]').val(), 10);
+            if (!product || !qty || qty < 1) { allFilled = false; return false; }
+        });
+        $('#addItem').prop('disabled', !allFilled);
     }
 
     function updateRowHint($row) {
@@ -182,7 +194,7 @@ $(document).ready(function () {
             } else {
                 detail = qty + ' ' + (qty === 1 ? p.unit : p.unitMany) + ' × ' + p.price + 'грн';
             }
-            lines.push('<div class="summary__line"><span><strong>' + p.label + ':</strong> <br \>' + detail + '</span><span>' + subtotal + 'грн</span></div>');
+            lines.push('<div class="summary__line"><span><strong>' + p.label + ':</strong> <br>' + detail + '</span><span>' + subtotal + 'грн</span></div>');
         });
 
         if (lines.length === 0) {
@@ -206,11 +218,13 @@ $(document).ready(function () {
         $(this).closest('.order__item').remove();
         updateRemoveButtons();
         recalculateSummary();
+        updateAddItemBtn();
     });
 
     $(document).on('change input', '.order__item select, .order__item input[type="number"]', function () {
         updateRowHint($(this).closest('.order__item'));
         recalculateSummary();
+        updateAddItemBtn();
     });
 
     // --- Phone mask: +38 (0XX) XXX-XX-XX ---
