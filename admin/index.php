@@ -2,7 +2,7 @@
 session_start();
 
 // ── Config ────────────────────────────────────────────────────────────────────
-define('ADMIN_PASSWORD',   'admin');          // Change this!
+define('ADMIN_PASSWORD',   'perepilka');          // Change this!
 define('SETTINGS_FILE',    __DIR__ . '/../data/settings.json');
 define('SUBMISSIONS_FILE', __DIR__ . '/../data/submissions.json');
 
