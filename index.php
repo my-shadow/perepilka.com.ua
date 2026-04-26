@@ -179,14 +179,23 @@ $_m = $_s['meta'];
             <h2 class="section-title fade-in">Наше Господарство</h2>
             <p class="section-subtitle fade-in">Загляньте на наше господарство — тут ми з любов'ю вирощуємо перепілок та збираємо найсвіжіші яйця для вас.</p>
             <div class="gallery__grid fade-in">
-                <a href="img/hero-eggs.webp" class="gallery__item">
-                    <img src="img/hero-eggs.webp" alt="Перепелині яйця в гнізді">
+                <a href="img/perepilku-01.webp" class="gallery__item">
+                    <img src="img/perepilku-01.webp" alt="Наші Перепілки">
                 </a>
-                <a href="img/product-eggs.webp" class="gallery__item">
-                    <img src="img/product-eggs.webp" alt="Перепелині яйця в мисці">
+                <a href="img/perepilku-02.webp" class="gallery__item">
+                    <img src="img/perepilku-02.webp" alt="Наші Перепілки">
                 </a>
-                <a href="img/product-quail.webp" class="gallery__item">
-                    <img src="img/product-quail.webp" alt="Перепілка">
+                <a href="img/perepilku-03.webp" class="gallery__item">
+                    <img src="img/perepilku-03.webp" alt="Наші Перепілки">
+                </a>
+                <a href="img/perepilky-mom.webp" class="gallery__item">
+                    <img src="img/perepilky-mom.webp" alt="Перепілка з господинею">
+                </a>
+                <a href="img/eggs-01.webp" class="gallery__item">
+                    <img src="img/eggs-01.webp" alt="Перепелині яйця в інкубаторі">
+                </a>
+                <a href="img/eggs-02.webp" class="gallery__item">
+                    <img src="img/eggs-02.webp" alt="Перепелині яйця в інкубаторі">
                 </a>
             </div>
         </div>
@@ -311,8 +320,7 @@ $_m = $_s['meta'];
     <section class="about" id="about">
         <div class="container about__inner">
             <div class="about__image fade-in">
-                <div class="about__img-wrap" style="background-image:url('img/product-quail.webp')">
-                    <div class="about__img-placeholder"><i class="fas fa-feather-alt"></i></div>
+                <div class="about__img-wrap" style="background-image:url('img/perepilky-mom.webp')">
                 </div>
                 <div class="about__badge">
                     <strong>3+</strong>
