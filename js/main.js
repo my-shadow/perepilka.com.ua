@@ -51,6 +51,21 @@ $(document).ready(function () {
         }
     });
 
+    // --- GIF lazy-start: activate only when #products scrolls into view ---
+    var $gifLazy = $('.gif-lazy[data-src]');
+    if ($gifLazy.length && 'IntersectionObserver' in window) {
+        var gifObserver = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                if (entry.isIntersecting) {
+                    var img = entry.target;
+                    img.src = img.dataset.src;
+                    gifObserver.unobserve(img);
+                }
+            });
+        }, { threshold: 0.1 });
+        $gifLazy.each(function () { gifObserver.observe(this); });
+    }
+
     // --- Scroll-triggered fade-in ---
     function checkFadeIn() {
         $('.fade-in').each(function () {

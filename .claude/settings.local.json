@@ -4,7 +4,15 @@
       "Bash(xargs ls:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git rm:*)"
+      "Bash(git rm:*)",
+      "Bash(ffmpeg -version)",
+      "PowerShell(Get-Command *)",
+      "PowerShell(winget install *)",
+      "PowerShell(ffmpeg *)",
+      "PowerShell(ffprobe *)",
+      "Bash(git -C \"F:/OSPanel/domains/perepilka.loc\" status)",
+      "Bash(git -C \"F:/OSPanel/domains/perepilka.loc\" diff)",
+      "Bash(git *)"
     ]
   }
 }

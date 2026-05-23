@@ -46,6 +46,12 @@ $_m = $_s['meta'];
     <?php if ($_ogImage): ?>
     <meta name="twitter:image"       content="<?= htmlspecialchars($_ogImage) ?>">
     <?php endif; ?>
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="img/favicon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon.png">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
@@ -217,7 +223,7 @@ $_m = $_s['meta'];
             <div class="products__grid">
                 <div class="product-card product-card--featured fade-in">
                     <div class="product-card__image">
-                        <img src="img/product-eggs.webp" alt="Перепелині Яйця">
+                        <img src="img/eggs-03.webp" alt="Перепелині Яйця">
                     </div>
                     <div class="product-card__body">
                         <h3 class="product-card__title">Перепелині Яйця</h3>
@@ -232,7 +238,7 @@ $_m = $_s['meta'];
                 </div>
                 <div class="product-card fade-in">
                     <div class="product-card__image">
-                        <img src="img/product-eggs.webp" alt="Інкубаційні Яйця">
+                        <img src="img/eggs-02.webp" alt="Інкубаційні Яйця">
                     </div>
                     <div class="product-card__body">
                         <h3 class="product-card__title">Інкубаційні Яйця</h3>
@@ -246,7 +252,7 @@ $_m = $_s['meta'];
                 </div>
                 <div class="product-card fade-in">
                     <div class="product-card__image">
-                        <img src="img/product-quail.webp" alt="Живі Добові Перепілки">
+                        <img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-src="img/perepilky-min.gif" alt="Живі Добові Перепілки" class="gif-lazy">
                     </div>
                     <div class="product-card__body">
                         <h3 class="product-card__title">Живі Добові Перепілки</h3>
